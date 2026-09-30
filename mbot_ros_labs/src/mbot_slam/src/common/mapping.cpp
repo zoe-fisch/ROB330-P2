@@ -20,6 +20,14 @@ void OccupancyGrid::markCellOccupied(int x, int y)
         // log_odds_[idx] = ???
         // kHitLogOdds defined in mapping.hpp, you need to tune the parameters there
         // Why we need kMinLogOdds and kMaxLogOdds? <- think about it and tune these values
+        // done
+        log_odds_[idx] = log_odds_[idx] + kHitLogOdds; 
+        if (log_odds_[idx] > kMaxLogOdds){
+            log_odds_[idx] = kMaxLogOdds;
+        }
+        if (log_odds_[idx] < kMinLogOdds){
+            log_odds_[idx] = kMinLogOdds;
+        }
     }
 }
 
@@ -33,6 +41,14 @@ void OccupancyGrid::markCellFree(int x, int y)
         // log_odds_[idx] = ???
         // kMissLogOdds defined in mapping.hpp, you need to tune the parameters there
         // Why we need kMinLogOdds and kMaxLogOdds? <- think about it and tune these values
+        // done
+        log_odds_[idx] = log_odds_[idx] + kMissLogOdds; 
+        if (log_odds_[idx] > kMaxLogOdds){
+            log_odds_[idx] = kMaxLogOdds;
+        }
+        if (log_odds_[idx] < kMinLogOdds){
+            log_odds_[idx] = kMinLogOdds;
+        }
     }
 }
 
@@ -85,9 +101,31 @@ std::vector<std::pair<int, int>> bresenhamRayTrace(
     // Implement the algorithm here, x0 y0 is the origin of the lidar ray
     // x1 y1 is the endpoint of the lidar ray
     // Hint: utilize the helper function here, such as gridToIndex
+    // done
 
-    (void)x0; (void)y0; (void)x1; (void)y1;
-    
+    int dx = std::abs(x1 - x0); 
+    int sx = x0 < x1 ? 1 : -1; 
+    int dy = std::abs(y1 - y0); 
+    int sy = y0 < y1 ? 1 : -1; 
+    int err = dx - dy;
+    int curr_x = x0; 
+    int curr_y = y0;
+
+    while (curr_x != x1 || curr_y != y1){ // while we have not reached the endpoint
+        if (grid.gridToIndex(curr_x, curr_y) != -1) {
+            cells.push_back({curr_x, curr_y});
+        }
+        int e2 = err * 2;
+        if (e2 >= -dy) {
+            err -= dy;
+            curr_x += sx;
+        }
+        if (e2 <= dx){
+            err += dx;
+            curr_y += sy;
+        }
+    } 
+    cells.push_back({x1, y1});
     
     return cells;
 }
