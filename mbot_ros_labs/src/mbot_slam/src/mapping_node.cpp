@@ -93,9 +93,10 @@ private:
 
             if (!ray_cells.empty()) {
                 for (size_t j = 0; j + 1 < ray_cells.size(); ++j) {
-                    // TODO: we fill up the occupancy grid here
-                    // Hint: use markCellFree() or markCellOccupied()
+                    grid_.markCellFree(ray_cells[j].first, ray_cells[j].second);
                 }
+                const auto& endpoint = ray_cells.back();
+                grid_.markCellOccupied(endpoint.first, endpoint.second);
             }
         }
     }
