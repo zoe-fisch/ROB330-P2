@@ -1,0 +1,37 @@
+#include "mbot_odometry.h"
+#include <math.h>
+
+#ifndef PI
+#define PI 3.14159265358979323846f
+#endif
+
+void mbot_calculate_odometry(float vx, float vy, float wz, float dt, float* x, float* y, float* theta) {
+    // Update pose
+    *x += vx * dt * cos(*theta) - vy * dt * sin(*theta);
+    *y += vx * dt * sin(*theta) + vy * dt * cos(*theta);
+    *theta += wz * dt;
+
+    // Normalize theta to [-pi, pi]
+    while (*theta > PI) *theta -= 2.0 * PI;
+    while (*theta <= -PI) *theta += 2.0 * PI;
+}
+
+void mbot_calculate_gyrodometry(float vx, float vy, float wz, float dt, float gyro_z, float* x, float* y, float* theta) {
+
+    float angular_velocity_diff = fabsf(gyro_z - wz); 
+
+    *x += vx * dt * cos(*theta) - vy * dt * sin(*theta);
+    *y += vx * dt * sin(*theta) + vy * dt * cos(*theta);
+
+    if (angular_velocity_diff > GYRODOM_THRESHOLD){
+        *theta += gyro_z * dt;
+    }
+    else {
+        *theta += wz * dt;
+    }
+    
+
+    // Normalize theta to [-pi, pi]
+    while (*theta > PI) *theta -= 2.0 * PI;
+    while (*theta <= -PI) *theta += 2.0 * PI;
+}

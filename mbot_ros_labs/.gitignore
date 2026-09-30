@@ -1,0 +1,12 @@
+# Generated ROS workspace files
+build/
+install/
+log/
+
+# Large recorded ROS bags
+*.mcap
+*_bag/
+
+# Python cache
+__pycache__/
+*.pyc

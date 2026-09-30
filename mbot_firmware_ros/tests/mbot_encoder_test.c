@@ -1,0 +1,47 @@
+/**
+ * Copyright (c) 2021
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#include <stdio.h>
+#include "pico/stdlib.h"
+#include "hardware/pio.h"
+#include "hardware/timer.h"
+#include <pico/multicore.h>
+#include <comms/dual_cdc.h>
+#include <mbot/encoder/encoder.h>
+
+#define DELTA "\u0394"
+#define PHI "\u03A6"
+#define THETA "\u0398"
+#define PSI "\u03A8"
+
+static void core1_usb_task(void) {
+    while (true) {
+        dual_cdc_task();
+        sleep_us(100);
+    }
+}
+
+int main() {
+    int d1, d2, d3, t1, t2, t3 = 0;
+    stdio_init_all();
+    dual_cdc_init();
+    multicore_launch_core1(core1_usb_task);
+    mbot_encoder_init();
+    sleep_ms(2000);
+    while (1) {
+        printf("\033[2J\r");
+        printf("|              *** MBot Encoder Test ***              |\n");
+        printf("| ENC 0%s | ENC 1%s | ENC 2%s |  ENC 0 |  ENC 1 |  ENC 2 |\n", DELTA, DELTA, DELTA);
+        d1 = mbot_encoder_read_delta(0);
+        d2 = mbot_encoder_read_delta(1);
+        d3 = mbot_encoder_read_delta(2);
+        t1 = mbot_encoder_read_count(0);
+        t2 = mbot_encoder_read_count(1);
+        t3 = mbot_encoder_read_count(2);
+        printf("| %7d| %7d| %7d| %7d| %7d| %7d|", d1, d2, d3, t1, t2, t3);
+        sleep_ms(100);
+    }
+}
