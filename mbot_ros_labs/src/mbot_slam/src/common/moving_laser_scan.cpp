@@ -34,8 +34,7 @@ void MovingLaserScan::deskewScan(const sensor_msgs::msg::LaserScan& scan,
     const double yaw_start = yawFromQuaternion(start_pose.orientation);
     const double yaw_end = yawFromQuaternion(end_pose.orientation);
     
-    // TODO: Calculate how much the robot body has rotated in total - delta_yaw
-    (void)yaw_start; (void)yaw_end;
+    const double delta_yaw = angleDiff(yaw_end, yaw_start);
     
     // Iterate over all beams
     for (size_t i = 0; i < num_rays; ++i)
@@ -46,16 +45,16 @@ void MovingLaserScan::deskewScan(const sensor_msgs::msg::LaserScan& scan,
         if (std::isnan(range) || range < scan.range_min || range > scan.range_max) {
             continue;
         }
-
-        // TODO: Calculate how much this ray has rotated - delta_lidar
-        // Hint: To calculate delta_lidar, check LiDAR Scan’s ROS message type “sensor_msgs/LaserScan” 
-
-        // TODO: ray.theta = delta_lidar + a fraction of delta_yaw
+        float frac = 0.0f;
+        if (num_rays > 1) {
+            frac = static_cast<float>(i) / static_cast<float>(num_rays - 1);
+        }
+        const double delta_lidar = scan.angle_min + i * scan.angle_increment;
 
         InterpolatedRay ray;
-        // ray.origin = ?  // Hint: use linearInterpolatePoint()
-        // ray.theta  = ? 
-        // ray.range  = ?  // Does range change?
+        ray.origin = linearInterpolatePoint(start_pose.position, end_pose.position, frac);
+        ray.theta = static_cast<float>(yaw_start + frac * delta_yaw + delta_lidar);
+        ray.range = range;
 
         rays_.push_back(ray);
     }
