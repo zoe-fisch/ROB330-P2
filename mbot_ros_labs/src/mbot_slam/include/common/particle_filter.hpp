@@ -17,7 +17,7 @@ class ParticleFilter
 {
 public:
     // Configuration constants
-    static constexpr int NUM_PARTICLES = 400;
+    static constexpr int NUM_PARTICLES = 1000;
 
     ParticleFilter();
 

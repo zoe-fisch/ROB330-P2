@@ -44,12 +44,6 @@ double SensorModel::likelihood(const MovingLaserScan& scan,
     int ray_count = 0;
     const float res = map.info.resolution;
 
-    double SensorModel::likelihood(const MovingLaserScan& scan,
-                               const nav_msgs::msg::OccupancyGrid& map) const
-
-    double score = 0.0;
-    int ray_count = 0;
-    const float res = map.info.resolution;
 
     for (const auto& ray : scan) {
         if ((ray_count++ % ray_stride_) != 0) continue;

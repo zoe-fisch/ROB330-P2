@@ -5,6 +5,7 @@
 #include <numeric>
 #include <cmath>
 #include <rclcpp/rclcpp.hpp>
+#include <chrono>
 
 // Constructor
 ParticleFilter::ParticleFilter()
@@ -39,12 +40,16 @@ geometry_msgs::msg::Pose ParticleFilter::update(const nav_msgs::msg::Odometry&  
 {
     bool moved = action_model_.processOdometry(odom);
     if (moved) {
+        auto start = std::chrono::high_resolution_clock::now();
         // only update estimate pose if the robot has moved
         const nav2_msgs::msg::ParticleCloud parent_cloud = particle_cloud_;
         nav2_msgs::msg::ParticleCloud proposal  = action_model_.propagateParticles(particle_cloud_);
         nav2_msgs::msg::ParticleCloud posterior = sensor_model_.weightParticles(proposal, parent_cloud, scan, map);
         pose_estimate_  = computeEstimatePose(posterior);
         particle_cloud_ = resampleParticles(posterior);
+        auto end = std::chrono::high_resolution_clock::now();
+        double elapsed_ms = std::chrono::duration<double, std::milli>(end - start).count();
+        std::cout << "PF_TIME " << elapsed_ms << std::endl;
     }
 
     return pose_estimate_;
@@ -58,8 +63,21 @@ nav2_msgs::msg::ParticleCloud ParticleFilter::resampleParticles(const nav2_msgs:
     std::uniform_real_distribution<double> unif(0.0, 1.0 / num_particles_);
     double random_offset = unif(random_gen);
 
-    // TODO: resample the particles here
-    (void)random_offset; (void)cloud;
+    double c = cloud.particles[0].weight;
+    int i = 0;
+
+    for (int m = 0; m < num_particles_; m++) {
+        double u = random_offset + static_cast<double>(m) / num_particles_;
+
+        while (u > c && i < static_cast<int>(cloud.particles.size()) - 1) {
+            i++;
+            c += cloud.particles[i].weight;
+        }
+
+        auto particle = cloud.particles[i];
+        particle.weight = 1.0 / static_cast<double>(num_particles_);
+        resampled.particles.push_back(particle);
+    }
 
     return resampled;
 }
@@ -80,8 +98,8 @@ geometry_msgs::msg::Pose ParticleFilter::computeEstimatePose(const nav2_msgs::ms
         const double theta = yawFromQuaternion(p.pose.orientation);
 
         // TODO: calculate the weighted sum of the particles' pose
-        x = x + (w * cos(theta));
-        y = y + (w * sin(theta));
+        x += w * p.pose.position.x;
+        y += w * p.pose.position.y;
         cos_sum += w * cos(theta);
         sin_sum += w * sin(theta);
     }

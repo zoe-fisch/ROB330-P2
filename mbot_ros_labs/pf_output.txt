@@ -1,0 +1,36 @@
+[INFO] [1791399623.878894301] [mbot_localization_node]: TF publishing ENABLED. Set initial pose in RViz using '2D Pose Estimate' tool
+[INFO] [1791399627.354244950] [mbot_localization_node]: Map received (197x203)
+[WARN] [1791399628.073040765] [mbot_localization_node]: Waiting for initial pose. Please set it in RViz using '2D Pose Estimate' tool
+[WARN] [1791399631.130879035] [mbot_localization_node]: Waiting for initial pose. Please set it in RViz using '2D Pose Estimate' tool
+[WARN] [1791399634.188168677] [mbot_localization_node]: Waiting for initial pose. Please set it in RViz using '2D Pose Estimate' tool
+[WARN] [1791399637.234706940] [mbot_localization_node]: Waiting for initial pose. Please set it in RViz using '2D Pose Estimate' tool
+[INFO] [1791399639.130844920] [particle_filter]: uniform weight initialization 0.001000
+[INFO] [1791399639.130904439] [action_model]: Initialized action model odometry reference.
+[INFO] [1791399639.130916754] [mbot_localization_node]: Particles are initialized at (-0.13, 0.08)
+PF_TIME 147.33
+PF_TIME 143.372
+PF_TIME 143.734
+PF_TIME 143.693
+PF_TIME 144.893
+PF_TIME 145.652
+PF_TIME 144.283
+PF_TIME 144.429
+PF_TIME 146.501
+PF_TIME 145.949
+PF_TIME 148.859
+PF_TIME 149.79
+PF_TIME 150.814
+PF_TIME 151.56
+PF_TIME 154.151
+PF_TIME 156.419
+PF_TIME 156.109
+PF_TIME 155.566
+PF_TIME 155.648
+PF_TIME 155.306
+PF_TIME 153.254
+PF_TIME 154.559
+PF_TIME 154.977
+PF_TIME 153.763
+PF_TIME 153.466
+PF_TIME 152.333
+PF_TIME 154.469
