@@ -40,13 +40,9 @@ bool ActionModel::processOdometry(const nav_msgs::msg::Odometry& odom)
         (std::abs(delta_theta) >= min_rot_);
 
     if (moved) {
-        (void)rot1_; (void)rot2_; (void)trans_;
-        // TODO: Compute the standard deviation (sqrt of variance) for each motion component.
-        // Noise scales with motion: std = sqrt(k1 * motion)
-        // k1, k2 are defined in action_model.hpp.
-        // rot1_std_  = ?
-        // trans_std_ = ?
-        // rot2_std_  = ?
+        rot1_std_ = std::sqrt(k1_ * std::abs(rot1_));
+        trans_std_ = std::sqrt(k2_ * trans_);
+        rot2_std_ = std::sqrt(k1_ * std::abs(rot2_));
     }
 
     prev_odom_ = odom;
@@ -68,12 +64,11 @@ geometry_msgs::msg::Pose ActionModel::propagateParticle(const geometry_msgs::msg
     // Current heading of the particle
     const double theta = yawFromQuaternion(pose.orientation);
 
-    // TODO: with sampled R-T-R values, what is the new pose of the particle
     geometry_msgs::msg::Pose new_pose = pose;
-    (void)sampled_rot1; (void)sampled_rot2; (void)sampled_trans; (void)theta;
-    // new_pose.position.x = ?
-    // new_pose.position.y = ?
-    // new_pose.orientation = quaternionFromYaw(?);
+    const double direction = theta + sampled_rot1;
+    new_pose.position.x += sampled_trans * std::cos(direction);
+    new_pose.position.y += sampled_trans * std::sin(direction);
+    new_pose.orientation = quaternionFromYaw(wrapToPi(direction + sampled_rot2));
 
     return new_pose;
 }
