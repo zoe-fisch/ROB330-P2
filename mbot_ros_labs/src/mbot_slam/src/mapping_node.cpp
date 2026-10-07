@@ -10,6 +10,8 @@
 #include "common/mapping.hpp"
 #include "common/moving_laser_scan.hpp"
 
+#include <iostream>
+
 class MappingNode : public rclcpp::Node
 {
 public:
@@ -41,6 +43,7 @@ private:
     std::shared_ptr<tf2_ros::Buffer>            tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
     bool first_scan_received_ = false;
+    int debug_scan_count_ = 0;
 
     void scanCallback(sensor_msgs::msg::LaserScan::SharedPtr scan)
     {
@@ -48,6 +51,7 @@ private:
             RCLCPP_INFO(this->get_logger(), "First scan received. Start to mapping...");
             first_scan_received_ = true;
         }
+
         // Lookup pose at first ray, bail out if unavailable
         geometry_msgs::msg::Pose scan_start_pose;
         try {
@@ -81,23 +85,77 @@ private:
         // Deskew the lidar scan from the robot pose at the first ray
         // to the robot pose at the last ray
         MovingLaserScan deskewed_scan(*scan, scan_start_pose, scan_end_pose);
+
+        if (debug_scan_count_ < 3) {
+            std::cout << "\n===== CALLING updateGrid =====" << std::endl;
+        }
+
         updateGrid(deskewed_scan);
+
+        debug_scan_count_++;
     }
 
     void updateGrid(const MovingLaserScan& scan)
     {
+        bool debug = debug_scan_count_ < 3;
+
+        if (debug) {
+            std::cout << "ENTERED updateGrid" << std::endl;
+        }
+
+        int ray_count = 0;
+        int nonempty_ray_count = 0;
+        int total_cells = 0;
+
         for (const auto& ray : scan)
         {
+            ray_count++;
+
+            if (debug && ray_count <= 5) {
+                std::cout << "ray " << ray_count
+                          << " origin=(" << ray.origin.x
+                          << ", " << ray.origin.y << ")"
+                          << " theta=" << ray.theta
+                          << " range=" << ray.range
+                          << std::endl;
+            }
+
             auto ray_cells = bresenhamRayTrace(
                 ray.origin.x, ray.origin.y, ray.theta, ray.range, grid_);
 
+            if (debug && ray_count <= 5) {
+                std::cout << "ray_cells size = "
+                          << ray_cells.size()
+                          << std::endl;
+            }
+
             if (!ray_cells.empty()) {
+                nonempty_ray_count++;
+                total_cells += ray_cells.size();
+
                 for (size_t j = 0; j + 1 < ray_cells.size(); ++j) {
                     grid_.markCellFree(ray_cells[j].first, ray_cells[j].second);
                 }
+
                 const auto& endpoint = ray_cells.back();
+
+                if (debug && ray_count <= 5) {
+                    std::cout << "calling markCellOccupied("
+                              << endpoint.first << ", "
+                              << endpoint.second << ")"
+                              << std::endl;
+                }
+
                 grid_.markCellOccupied(endpoint.first, endpoint.second);
             }
+        }
+
+        if (debug) {
+            std::cout << "----- updateGrid summary -----" << std::endl;
+            std::cout << "rays = " << ray_count << std::endl;
+            std::cout << "nonempty rays = " << nonempty_ray_count << std::endl;
+            std::cout << "total cells = " << total_cells << std::endl;
+            std::cout << "------------------------------" << std::endl;
         }
     }
 

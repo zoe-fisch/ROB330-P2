@@ -1,6 +1,7 @@
 #include "common/mapping.hpp"
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
 OccupancyGrid::OccupancyGrid(float width_m, float height_m, float resolution, float origin_x, float origin_y)
 : resolution_(resolution), origin_x_(origin_x), origin_y_(origin_y)
@@ -12,9 +13,25 @@ OccupancyGrid::OccupancyGrid(float width_m, float height_m, float resolution, fl
 
 void OccupancyGrid::markCellOccupied(int x, int y)
 {
+    static int debug_count = 0;
+
+    if (debug_count < 20) {
+        std::cout << "markCellOccupied called with x=" << x
+                  << " y=" << y << std::endl;
+    }
+
     int idx = gridToIndex(x, y);
+
+    if (debug_count < 20) {
+        std::cout << "grid index = " << idx << std::endl;
+    }
+
     if (idx >= 0 && static_cast<size_t>(idx) < log_odds_.size())
     {
+        if (debug_count < 20) {
+            std::cout << "valid occupied cell" << std::endl;
+        }
+
         if (std::isnan(log_odds_[idx])) log_odds_[idx] = 0.0f;
         // TODO: how to assign log odds values to occupied cells?
         // log_odds_[idx] = ???
@@ -28,14 +45,38 @@ void OccupancyGrid::markCellOccupied(int x, int y)
         if (log_odds_[idx] < kMinLogOdds){
             log_odds_[idx] = kMinLogOdds;
         }
+
+        if (debug_count < 20) {
+            std::cout << "new log odds = " << log_odds_[idx] << std::endl;
+        }
+    }
+
+    if (debug_count < 20) {
+        debug_count++;
     }
 }
 
 void OccupancyGrid::markCellFree(int x, int y)
 {
+    static int debug_count = 0;
+
+    if (debug_count < 20) {
+        std::cout << "markCellFree called with x=" << x
+                  << " y=" << y << std::endl;
+    }
+
     int idx = gridToIndex(x, y);
+
+    if (debug_count < 20) {
+        std::cout << "grid index = " << idx << std::endl;
+    }
+
     if (idx >= 0 && static_cast<size_t>(idx) < log_odds_.size())
     {
+        if (debug_count < 20) {
+            std::cout << "valid free cell" << std::endl;
+        }
+
         if (std::isnan(log_odds_[idx])) log_odds_[idx] = 0.0f;
         // TODO: how to assign log odds values to free cells?
         // log_odds_[idx] = ???
@@ -49,6 +90,14 @@ void OccupancyGrid::markCellFree(int x, int y)
         if (log_odds_[idx] < kMinLogOdds){
             log_odds_[idx] = kMinLogOdds;
         }
+
+        if (debug_count < 20) {
+            std::cout << "new log odds = " << log_odds_[idx] << std::endl;
+        }
+    }
+
+    if (debug_count < 20) {
+        debug_count++;
     }
 }
 
@@ -125,7 +174,10 @@ std::vector<std::pair<int, int>> bresenhamRayTrace(
             curr_y += sy;
         }
     } 
-    cells.push_back({x1, y1});
+
+    if (grid.gridToIndex(x1, y1) != -1) {
+        cells.push_back({x1, y1});
+    }
     
     return cells;
 }
