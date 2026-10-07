@@ -44,6 +44,13 @@ double SensorModel::likelihood(const MovingLaserScan& scan,
     int ray_count = 0;
     const float res = map.info.resolution;
 
+    double SensorModel::likelihood(const MovingLaserScan& scan,
+                               const nav_msgs::msg::OccupancyGrid& map) const
+
+    double score = 0.0;
+    int ray_count = 0;
+    const float res = map.info.resolution;
+
     for (const auto& ray : scan) {
         if ((ray_count++ % ray_stride_) != 0) continue;
 
@@ -62,15 +69,34 @@ double SensorModel::likelihood(const MovingLaserScan& scan,
         // Check endpoint cell
         double log_odds = occupancyToLogOdds(getOccupancy(gx, gy, map));
         if (log_odds > 0) { 
-            // TODO: The endpoint is a hit, how do we score the ray?
-            // score = ?
+            score += 1.0;
         }
-        // TODO: if endpoint cell not a hit - check one cell after (along ray)
-        // TODO: if cell after not a hit - check one cell before (along ray)
-        // Hint if we check before/after cell, we take a fraction
+        // if endpoint cell not a hit - check one cell after (along ray)
+        else {
+            double next_x, next_y, post_log_odds;
+            next_x = end_x + res * dx;
+            next_y = end_y + res * dy;
+            int grid_x, grid_y;
+            if (worldToGrid(next_x, next_y, map, grid_x, grid_y)) {
+                post_log_odds = occupancyToLogOdds(getOccupancy(grid_x, grid_y, map));
+                if (post_log_odds > 0) {
+                    score += ADJACENT_FRACTION;
+                }
+                // if cell after not a hit - check one cell before (along ray)
+                else {
+                    double prev_x = end_x - res * dx;
+                    double prev_y = end_y - res * dy;
+                    if (worldToGrid(prev_x, prev_y, map, grid_x, grid_y)) {
+                        post_log_odds = occupancyToLogOdds(getOccupancy(grid_x, grid_y, map));
+                        if (post_log_odds > 0) {
+                            score += ADJACENT_FRACTION;
+                        }
+                    }
+                }
+            }
+        }
         // you can use ADJACENT_FRACTION in sensor_model.hpp
         // you can also tune RAY_STRIDE to skip ray for faster computing
-        (void)res;
     }
 
     return score;

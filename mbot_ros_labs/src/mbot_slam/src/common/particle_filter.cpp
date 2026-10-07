@@ -70,7 +70,7 @@ void ParticleFilter::reinvigorateParticles(nav2_msgs::msg::ParticleCloud& cloud)
 {
     (void)cloud;
 }
-
+ // estimating position of the robot using weighted avg of particle guesses 
 geometry_msgs::msg::Pose ParticleFilter::computeEstimatePose(const nav2_msgs::msg::ParticleCloud& cloud) const
 {
     double x=0.0, y=0.0, cos_sum=0.0, sin_sum=0.0;
@@ -80,12 +80,15 @@ geometry_msgs::msg::Pose ParticleFilter::computeEstimatePose(const nav2_msgs::ms
         const double theta = yawFromQuaternion(p.pose.orientation);
 
         // TODO: calculate the weighted sum of the particles' pose
-        (void)x; (void)y; (void)cos_sum; (void)sin_sum; (void)w, (void)theta;
+        x = x + (w * cos(theta));
+        y = y + (w * sin(theta));
+        cos_sum += w * cos(theta);
+        sin_sum += w * sin(theta);
     }
 
     geometry_msgs::msg::Pose est;
-    // est.position.x = ?
-    // est.position.y = ?
-    // est.orientation = quaternionFromYaw(?);
+    est.position.x = x;
+    est.position.y = y;
+    est.orientation = quaternionFromYaw(atan2(sin_sum, cos_sum));
     return est;
 }
