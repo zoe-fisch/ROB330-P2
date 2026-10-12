@@ -47,6 +47,7 @@ double SensorModel::likelihood(const MovingLaserScan& scan,
 
     for (const auto& ray : scan) {
         if ((ray_count++ % ray_stride_) != 0) continue;
+        if (!ray.has_hit) continue;
 
         // Lidar is mounted backward (180 degree offset)
         double angle = wrapToPi(ray.theta + M_PI);

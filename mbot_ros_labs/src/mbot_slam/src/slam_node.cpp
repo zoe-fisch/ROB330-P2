@@ -25,7 +25,7 @@ public:
     : Node("mbot_slam_node"),
       tf_buffer_(std::make_shared<tf2_ros::Buffer>(this->get_clock())),
       tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_)),
-      grid_(10.0, 10.0, 0.02, -5.0, -5.0)
+      grid_(10.0, 10.0, 0.05, -5.0, -5.0)
     {
         // Particle filter
         particle_filter_ = std::make_unique<ParticleFilter>();
@@ -142,11 +142,18 @@ private:
             auto ray_cells = bresenhamRayTrace(
                 ray.origin.x, ray.origin.y, ray.theta + M_PI, ray.range, grid_); // + pi for backward mounted lidar
             
-                if (!ray_cells.empty()) {
-                for (size_t j = 0; j + 1 < ray_cells.size(); ++j) {
-                    // TODO: we fill up the occupancy grid here
-                    // Hint: use markCellFree() or markCellOccupied()
-                }
+            if (ray_cells.empty()) {
+                continue;
+            }
+
+            const size_t free_cell_count = ray.has_hit ? ray_cells.size() - 1 : ray_cells.size();
+            for (size_t j = 0; j < free_cell_count; ++j) {
+                grid_.markCellFree(ray_cells[j].first, ray_cells[j].second);
+            }
+
+            if (ray.has_hit) {
+                const auto& endpoint = ray_cells.back();
+                grid_.markCellOccupied(endpoint.first, endpoint.second);
             }
         }
 

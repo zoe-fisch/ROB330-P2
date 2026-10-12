@@ -11,6 +11,7 @@ struct InterpolatedRay
     geometry_msgs::msg::Point origin;
     float theta;
     float range;
+    bool has_hit;
 };
 
 class MovingLaserScan

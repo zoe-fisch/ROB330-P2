@@ -55,6 +55,7 @@ void MovingLaserScan::deskewScan(const sensor_msgs::msg::LaserScan& scan,
         ray.origin = linearInterpolatePoint(start_pose.position, end_pose.position, frac);
         ray.theta = static_cast<float>(yaw_start + frac * delta_yaw + delta_lidar);
         ray.range = range;
+        ray.has_hit = range < scan.range_max;
 
         rays_.push_back(ray);
     }

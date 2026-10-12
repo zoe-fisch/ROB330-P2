@@ -133,20 +133,21 @@ private:
                 nonempty_ray_count++;
                 total_cells += ray_cells.size();
 
-                for (size_t j = 0; j + 1 < ray_cells.size(); ++j) {
+                const size_t free_cell_count = ray.has_hit ? ray_cells.size() - 1 : ray_cells.size();
+                for (size_t j = 0; j < free_cell_count; ++j) {
                     grid_.markCellFree(ray_cells[j].first, ray_cells[j].second);
                 }
 
-                const auto& endpoint = ray_cells.back();
-
-                if (debug && ray_count <= 5) {
-                    std::cout << "calling markCellOccupied("
-                              << endpoint.first << ", "
-                              << endpoint.second << ")"
-                              << std::endl;
+                if (ray.has_hit) {
+                    const auto& endpoint = ray_cells.back();
+                    if (debug && ray_count <= 5) {
+                        std::cout << "calling markCellOccupied("
+                                  << endpoint.first << ", "
+                                  << endpoint.second << ")"
+                                  << std::endl;
+                    }
+                    grid_.markCellOccupied(endpoint.first, endpoint.second);
                 }
-
-                grid_.markCellOccupied(endpoint.first, endpoint.second);
             }
         }
 

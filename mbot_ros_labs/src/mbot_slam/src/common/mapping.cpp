@@ -121,8 +121,8 @@ std::vector<int8_t> OccupancyGrid::getOccupancyGrid() const
 
 std::pair<int, int> OccupancyGrid::worldToGrid(float x, float y) const {
     return {
-        static_cast<int>((x - origin_x_) / resolution_),
-        static_cast<int>((y - origin_y_) / resolution_)
+        static_cast<int>(std::floor((x - origin_x_) / resolution_)),
+        static_cast<int>(std::floor((y - origin_y_) / resolution_))
     };
 }
 

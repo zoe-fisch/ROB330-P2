@@ -10,7 +10,7 @@
 class SensorModel
 {
 public:
-    static constexpr int RAY_STRIDE = 2;
+    static constexpr int RAY_STRIDE = 3;
     static constexpr double ADJACENT_FRACTION = 0.5;
 
     explicit SensorModel();
