@@ -29,7 +29,7 @@ private:
     nav_msgs::msg::Odometry prev_odom_;
 
     double k1_{0.015};          // rotational noise coefficient
-    double k2_{0.008};          // translational noise coefficient
+    double k2_{0.006};          // translational noise coefficient
     double min_trans_{0.005}; // [m] ignore motion below this
     double min_rot_ {0.01};    // [rad] ignore rotation below this
 

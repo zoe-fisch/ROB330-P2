@@ -34,8 +34,8 @@ private:
 
     const float kHitLogOdds = 0.85f;  
     const float kMissLogOdds = -0.4f;
-    const float kMinLogOdds = -2.0f;
-    const float kMaxLogOdds = 3.5f;
+    const float kMinLogOdds = -3.0f;
+    const float kMaxLogOdds = 5.0f;
 };
 
 // Bresenham-style ray tracing from sensor origin to hit

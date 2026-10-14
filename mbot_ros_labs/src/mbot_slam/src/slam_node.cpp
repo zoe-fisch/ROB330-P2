@@ -1,4 +1,5 @@
 #include <rclcpp/rclcpp.hpp>
+#include <std_srvs/srv/set_bool.hpp>
 
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -44,6 +45,21 @@ public:
         map_timer_ = create_wall_timer(std::chrono::milliseconds(500),
                                        std::bind(&SLAMNode::publishMap, this));
 
+        freeze_srv_ = create_service<std_srvs::srv::SetBool>(
+            "/slam/freeze_mapping",
+            [this](const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+                   std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
+                mapping_frozen_ = request->data;
+                response->success = true;
+                response->message = mapping_frozen_
+                    ? "Map frozen" : "Map resumed";
+                RCLCPP_INFO(
+                    get_logger(),
+                    "%s",
+                    response->message.c_str()
+                );
+            });
+
         // Subscriptions
         scan_sub_ = create_subscription<sensor_msgs::msg::LaserScan>(
             "/scan", 20,
@@ -77,6 +93,8 @@ private:
     geometry_msgs::msg::Pose prev_est_pose_;
 
     bool has_initialized_{false};
+    bool mapping_frozen_{false};
+    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr freeze_srv_;
 
     // Scan callback
     void scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan)
@@ -121,7 +139,7 @@ private:
 
             // Interpolate the scan between the last estimate pose and current est pose
             MovingLaserScan deskewed_scan(*scan, prev_est_pose_, est_pose);
-            updateGrid(deskewed_scan);
+            if (!mapping_frozen_) updateGrid(deskewed_scan);
             prev_est_pose_ = est_pose;
             
             // Broadcast map -> odom transform

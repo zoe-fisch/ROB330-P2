@@ -11,6 +11,7 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
@@ -30,7 +31,7 @@ set(COMMON_SRCS
   src/common/moving_laser_scan.cpp
 )
 
-set(DEPS rclcpp sensor_msgs nav_msgs nav2_msgs geometry_msgs tf2 tf2_ros tf2_geometry_msgs)
+set(DEPS rclcpp std_srvs sensor_msgs nav_msgs nav2_msgs geometry_msgs tf2 tf2_ros tf2_geometry_msgs)
 
 # Three nodes: odometry mapping, localization-only, full SLAM
 add_executable(mapping_node      ${COMMON_SRCS} src/mapping_node.cpp)
